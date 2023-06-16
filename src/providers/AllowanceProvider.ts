@@ -1,34 +1,40 @@
-import { BigNumber } from '@ethersproject/bignumber'
-import { Provider } from '@ethersproject/providers'
-import Permit2Abi from '../../abis/Permit2.json'
-import { Contract } from '@ethersproject/contracts'
+import { Address, PublicClient } from 'viem'
+
+import permit2Abi from '../abis/permit2ABI'
 
 export interface AllowanceData {
-  amount: BigNumber
+  amount: bigint
   nonce: number
   expiration: number
 }
 
 export class AllowanceProvider {
-  private permit2: Contract
+  constructor(private publicClient: PublicClient, private permit2Address: Address) {}
 
-  constructor(private provider: Provider, private permit2Address: string) {
-    this.permit2 = new Contract(this.permit2Address, Permit2Abi, this.provider)
+  async getAllowanceData(token: Address, owner: Address, spender: Address): Promise<AllowanceData> {
+    const result = await this.publicClient.readContract({
+      abi: permit2Abi,
+      address: this.permit2Address,
+      functionName: 'allowance',
+      args: [owner, token, spender],
+    })
+
+    return {
+      amount: result[0],
+      nonce: result[1],
+      expiration: result[2],
+    }
   }
 
-  async getAllowanceData(token: string, owner: string, spender: string): Promise<AllowanceData> {
-    return await this.permit2.allowance(owner, token, spender)
-  }
-
-  async getAllowance(token: string, owner: string, spender: string): Promise<BigNumber> {
+  async getAllowance(token: Address, owner: Address, spender: Address): Promise<bigint> {
     return (await this.getAllowanceData(token, owner, spender)).amount
   }
 
-  async getNonce(token: string, owner: string, spender: string): Promise<number> {
+  async getNonce(token: Address, owner: Address, spender: Address): Promise<number> {
     return (await this.getAllowanceData(token, owner, spender)).nonce
   }
 
-  async getExpiration(token: string, owner: string, spender: string): Promise<number> {
+  async getExpiration(token: Address, owner: Address, spender: Address): Promise<number> {
     return (await this.getAllowanceData(token, owner, spender)).expiration
   }
 }

@@ -1,5 +1,5 @@
-import { AllowanceTransfer } from './allowanceTransfer'
-import { MaxOrderedNonce, MaxAllowanceTransferAmount, MaxAllowanceExpiration, MaxSigDeadline } from './constants'
+import { AllowanceTransfer } from '../src/allowanceTransfer'
+import { MaxOrderedNonce, MaxAllowanceTransferAmount, MaxAllowanceExpiration, MaxSigDeadline } from '../src/constants'
 
 describe('AllowanceTransfer', () => {
   describe('Max values', () => {
@@ -9,12 +9,12 @@ describe('AllowanceTransfer', () => {
           {
             details: {
               token: '0x0000000000000000000000000000000000000000',
-              amount: MaxAllowanceTransferAmount.toString(),
-              expiration: MaxAllowanceExpiration.toString(),
-              nonce: MaxOrderedNonce.toString(),
+              amount: MaxAllowanceTransferAmount,
+              expiration: Number(MaxAllowanceExpiration),
+              nonce: Number(MaxOrderedNonce),
             },
             spender: '0x0000000000000000000000000000000000000000',
-            sigDeadline: MaxSigDeadline.toString(),
+            sigDeadline: MaxSigDeadline,
           },
           '0x0000000000000000000000000000000000000000',
           1
@@ -28,12 +28,12 @@ describe('AllowanceTransfer', () => {
           {
             details: {
               token: '0x0000000000000000000000000000000000000000',
-              amount: '0',
-              expiration: '0',
-              nonce: MaxOrderedNonce.add(1).toString(),
+              amount: 0n,
+              expiration: 0,
+              nonce: Number(MaxOrderedNonce + 1n),
             },
             spender: '0x0000000000000000000000000000000000000000',
-            sigDeadline: '0',
+            sigDeadline: 0n,
           },
           '0x0000000000000000000000000000000000000000',
           1
@@ -47,12 +47,12 @@ describe('AllowanceTransfer', () => {
           {
             details: {
               token: '0x0000000000000000000000000000000000000000',
-              amount: MaxAllowanceTransferAmount.add(1).toString(),
-              expiration: '0',
+              amount: MaxAllowanceTransferAmount + 1n,
+              expiration: 0,
               nonce: 0,
             },
             spender: '0x0000000000000000000000000000000000000000',
-            sigDeadline: '0',
+            sigDeadline: 0n,
           },
           '0x0000000000000000000000000000000000000000',
           1
@@ -66,12 +66,12 @@ describe('AllowanceTransfer', () => {
           {
             details: {
               token: '0x0000000000000000000000000000000000000000',
-              amount: '0',
-              expiration: MaxAllowanceExpiration.add(1).toString(),
+              amount: 0n,
+              expiration: Number(MaxAllowanceExpiration + 1n),
               nonce: 0,
             },
             spender: '0x0000000000000000000000000000000000000000',
-            sigDeadline: '0',
+            sigDeadline: 0n,
           },
           '0x0000000000000000000000000000000000000000',
           1
@@ -85,12 +85,12 @@ describe('AllowanceTransfer', () => {
           {
             details: {
               token: '0x0000000000000000000000000000000000000000',
-              amount: '0',
-              expiration: '0',
+              amount: 0n,
+              expiration: 0,
               nonce: 0,
             },
             spender: '0x0000000000000000000000000000000000000000',
-            sigDeadline: MaxSigDeadline.add(1).toString(),
+            sigDeadline: MaxSigDeadline + 1n,
           },
           '0x0000000000000000000000000000000000000000',
           1
@@ -105,12 +105,12 @@ describe('AllowanceTransfer', () => {
         {
           details: {
             token: '0x0000000000000000000000000000000000000000',
-            amount: '0',
-            expiration: '0',
+            amount: 0n,
+            expiration: 0,
             nonce: 0,
           },
           spender: '0x0000000000000000000000000000000000000000',
-          sigDeadline: '0',
+          sigDeadline: 0n,
         },
         '0x0000000000000000000000000000000000000000',
         1
@@ -125,13 +125,13 @@ describe('AllowanceTransfer', () => {
           details: [
             {
               token: '0x0000000000000000000000000000000000000000',
-              amount: '0',
-              expiration: '0',
+              amount: 0n,
+              expiration: 0,
               nonce: 0,
             },
           ],
           spender: '0x0000000000000000000000000000000000000000',
-          sigDeadline: '0',
+          sigDeadline: 0n,
         },
         '0x0000000000000000000000000000000000000000',
         1

@@ -1,8 +1,8 @@
-import { TypedDataDomain, TypedDataField } from '@ethersproject/abstract-signer'
+import { Address, TypedData, TypedDataDomain } from 'viem'
 
 const PERMIT2_DOMAIN_NAME = 'Permit2'
 
-export function permit2Domain(permit2Address: string, chainId: number): TypedDataDomain {
+export function permit2Domain(permit2Address: Address, chainId: number): TypedDataDomain {
   return {
     name: PERMIT2_DOMAIN_NAME,
     chainId,
@@ -12,6 +12,6 @@ export function permit2Domain(permit2Address: string, chainId: number): TypedDat
 
 export type PermitData = {
   domain: TypedDataDomain
-  types: Record<string, TypedDataField[]>
+  types: TypedData
   values: any
 }

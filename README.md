@@ -1,4 +1,4 @@
-# permit2-sdk
+# permit2-sdk-viem
 
 ## Local Development
 
