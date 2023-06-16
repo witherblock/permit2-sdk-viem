@@ -127,30 +127,30 @@ contract Permit2Test is Test {
         assertEq(token.balanceOf(address(from)), 0);
     }
 
-    // function testSignatureTransferWitness() public {
-    //     bytes32 msgHash = json.readBytes32("._PERMIT_TRANSFER_WITNESS");
+    function testSignatureTransferWitness() public {
+        bytes32 msgHash = json.readBytes32("._PERMIT_TRANSFER_WITNESS");
 
-    //     token.mint(from, AMOUNT);
+        token.mint(from, AMOUNT);
 
-    //     vm.prank(SPENDER);
-    //     ISignatureTransfer.SignatureTransferDetails memory details =
-    //         ISignatureTransfer.SignatureTransferDetails({to: address(SPENDER), requestedAmount: AMOUNT});
-    //     permit2.permitWitnessTransferFrom(
-    //         ISignatureTransfer.PermitTransferFrom({
-    //             permitted: ISignatureTransfer.TokenPermissions({token: address(token), amount: AMOUNT}),
-    //             nonce: 0,
-    //             deadline: EXPIRATION
-    //         }),
-    //         details,
-    //         from,
-    //         MockWitness.hash(0),
-    //         MockWitness.WITNESS_TYPE_STRING,
-    //         sign(msgHash)
-    //     );
+        vm.prank(SPENDER);
+        ISignatureTransfer.SignatureTransferDetails memory details =
+            ISignatureTransfer.SignatureTransferDetails({to: address(SPENDER), requestedAmount: AMOUNT});
+        permit2.permitWitnessTransferFrom(
+            ISignatureTransfer.PermitTransferFrom({
+                permitted: ISignatureTransfer.TokenPermissions({token: address(token), amount: AMOUNT}),
+                nonce: 0,
+                deadline: EXPIRATION
+            }),
+            details,
+            from,
+            MockWitness.hash(0),
+            MockWitness.WITNESS_TYPE_STRING,
+            sign(msgHash)
+        );
 
-    //     assertEq(token.balanceOf(address(SPENDER)), AMOUNT);
-    //     assertEq(token.balanceOf(address(from)), 0);
-    // }
+        assertEq(token.balanceOf(address(SPENDER)), AMOUNT);
+        assertEq(token.balanceOf(address(from)), 0);
+    }
 
     function sign(bytes32 msgHash) public returns (bytes memory sig) {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(fromPrivateKey, msgHash);

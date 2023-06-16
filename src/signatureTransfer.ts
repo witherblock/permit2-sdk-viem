@@ -77,7 +77,12 @@ export abstract class SignatureTransfer {
    */
   private constructor() {}
 
-  public static getPermitTransferData(permit: PermitTransferFrom, permit2Address: Address, chainId: number) {
+  public static getPermitTransferData(
+    permit: PermitTransferFrom,
+    permit2Address: Address,
+    chainId: number,
+    witness?: Witness
+  ) {
     invariant(MaxSigDeadline >= permit.deadline, 'SIG_DEADLINE_OUT_OF_RANGE')
     invariant(MaxUnorderedNonce >= permit.nonce, 'NONCE_OUT_OF_RANGE')
 
@@ -85,14 +90,22 @@ export abstract class SignatureTransfer {
 
     validateTokenPermissions(permit.permitted)
 
+    const types = witness ? { ...PERMIT_TRANSFER_FROM_TYPES, ...witness.witnessType } : PERMIT_TRANSFER_FROM_TYPES
+    const values = witness ? Object.assign(permit, { witness: witness.witness }) : permit
+
     return {
       domain,
-      types: PERMIT_TRANSFER_FROM_TYPES,
-      values: permit,
+      types,
+      values,
     }
   }
 
-  public static getPermitBatchTransferData(permit: PermitBatchTransferFrom, permit2Address: Address, chainId: number) {
+  public static getPermitBatchTransferData(
+    permit: PermitBatchTransferFrom,
+    permit2Address: Address,
+    chainId: number,
+    witness?: Witness
+  ) {
     invariant(MaxSigDeadline >= permit.deadline, 'SIG_DEADLINE_OUT_OF_RANGE')
     invariant(MaxUnorderedNonce >= permit.nonce, 'NONCE_OUT_OF_RANGE')
 
@@ -100,10 +113,15 @@ export abstract class SignatureTransfer {
 
     permit.permitted.forEach(validateTokenPermissions)
 
+    const types = witness
+      ? { ...PERMIT_BATCH_TRANSFER_FROM_TYPES, ...witness.witnessType }
+      : PERMIT_BATCH_TRANSFER_FROM_TYPES
+    const values = witness ? Object.assign(permit, { witness: witness.witness }) : permit
+
     return {
       domain,
-      types: PERMIT_BATCH_TRANSFER_FROM_TYPES,
-      values: permit,
+      types,
+      values,
     }
   }
 
@@ -113,12 +131,12 @@ export abstract class SignatureTransfer {
     permit: PermitTransferFrom | PermitBatchTransferFrom,
     permit2Address: Address,
     chainId: number,
-    _witness?: Witness
+    witness?: Witness
   ): PermitTransferFromData | PermitBatchTransferFromData {
     if (isPermitTransferFrom(permit)) {
-      return this.getPermitTransferData(permit, permit2Address, chainId)
+      return this.getPermitTransferData(permit, permit2Address, chainId, witness)
     } else {
-      return this.getPermitBatchTransferData(permit, permit2Address, chainId)
+      return this.getPermitBatchTransferData(permit, permit2Address, chainId, witness)
     }
   }
 
@@ -126,10 +144,15 @@ export abstract class SignatureTransfer {
     permit: PermitTransferFrom | PermitBatchTransferFrom,
     permit2Address: Address,
     chainId: number,
-    _witness?: Witness
+    witness?: Witness
   ): string {
     if (isPermitTransferFrom(permit)) {
-      const { domain, types, values } = SignatureTransfer.getPermitTransferData(permit, permit2Address, chainId)
+      const { domain, types, values } = SignatureTransfer.getPermitTransferData(
+        permit,
+        permit2Address,
+        chainId,
+        witness
+      )
 
       return hashTypedData({
         domain,
@@ -138,7 +161,12 @@ export abstract class SignatureTransfer {
         message: values,
       })
     } else {
-      const { domain, types, values } = SignatureTransfer.getPermitBatchTransferData(permit, permit2Address, chainId)
+      const { domain, types, values } = SignatureTransfer.getPermitBatchTransferData(
+        permit,
+        permit2Address,
+        chainId,
+        witness
+      )
 
       return hashTypedData({
         domain,
