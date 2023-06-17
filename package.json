@@ -15,7 +15,8 @@
   "scripts": {
     "test": "jest",
     "build": "node scripts/build.js && tsc --emitDeclarationOnly --outDir dist",
-    "interop": "yarn node scripts/writeInterop.js"
+    "interop": "yarn node scripts/writeInterop.js",
+    "prepare": "yarn build"
   },
   "repository": {
     "type": "git",
