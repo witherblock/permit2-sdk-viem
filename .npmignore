@@ -1,0 +1,16 @@
+src
+scripts
+test
+lib
+.gitattributes
+.gitmodules
+node_modules/
+tsconfig.json
+remappings.txt
+jest.config.ts
+foundry.toml
+out
+cache
+abis
+.vscode
+.github
