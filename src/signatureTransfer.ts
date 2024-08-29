@@ -8,7 +8,7 @@ import { MaxSigDeadline, MaxUnorderedNonce, MaxSignatureTransferAmount } from '.
 export interface Witness {
   witness: any
   witnessTypeName: string
-  witnessType: TypedData
+  witnessType: { [key: string]: { name: string; type: string }[] }
 }
 
 export interface TokenPermissions {
@@ -77,7 +77,12 @@ export abstract class SignatureTransfer {
    */
   private constructor() {}
 
-  public static getPermitTransferData(permit: PermitTransferFrom, permit2Address: Address, chainId: number) {
+  public static getPermitTransferData(
+    permit: PermitTransferFrom,
+    permit2Address: Address,
+    chainId: number,
+    witness?: Witness
+  ): PermitTransferFromData {
     invariant(MaxSigDeadline >= permit.deadline, 'SIG_DEADLINE_OUT_OF_RANGE')
     invariant(MaxUnorderedNonce >= permit.nonce, 'NONCE_OUT_OF_RANGE')
 
@@ -85,14 +90,35 @@ export abstract class SignatureTransfer {
 
     validateTokenPermissions(permit.permitted)
 
+    const types = witness
+      ? ({
+          TokenPermissions: TOKEN_PERMISSIONS,
+          ...witness.witnessType,
+          PermitWitnessTransferFrom: [
+            { name: 'permitted', type: 'TokenPermissions' },
+            { name: 'spender', type: 'address' },
+            { name: 'nonce', type: 'uint256' },
+            { name: 'deadline', type: 'uint256' },
+            { name: 'witness', type: witness.witnessTypeName },
+          ],
+        } as const)
+      : PERMIT_TRANSFER_FROM_TYPES
+
+    const values = witness ? Object.assign(permit, { witness: witness.witness }) : permit
+
     return {
       domain,
-      types: PERMIT_TRANSFER_FROM_TYPES,
-      values: permit,
+      types,
+      values,
     }
   }
 
-  public static getPermitBatchTransferData(permit: PermitBatchTransferFrom, permit2Address: Address, chainId: number) {
+  public static getPermitBatchTransferData(
+    permit: PermitBatchTransferFrom,
+    permit2Address: Address,
+    chainId: number,
+    witness?: Witness
+  ): PermitBatchTransferFromData {
     invariant(MaxSigDeadline >= permit.deadline, 'SIG_DEADLINE_OUT_OF_RANGE')
     invariant(MaxUnorderedNonce >= permit.nonce, 'NONCE_OUT_OF_RANGE')
 
@@ -100,10 +126,26 @@ export abstract class SignatureTransfer {
 
     permit.permitted.forEach(validateTokenPermissions)
 
+    const types = witness
+      ? {
+          ...witness.witnessType,
+          TokenPermissions: TOKEN_PERMISSIONS,
+          PermitBatchWitnessTransferFrom: [
+            { name: 'permitted', type: 'TokenPermissions[]' },
+            { name: 'spender', type: 'address' },
+            { name: 'nonce', type: 'uint256' },
+            { name: 'deadline', type: 'uint256' },
+            { name: 'witness', type: witness.witnessTypeName },
+          ],
+        }
+      : PERMIT_BATCH_TRANSFER_FROM_TYPES
+
+    const values = witness ? Object.assign(permit, { witness: witness.witness }) : permit
+
     return {
       domain,
-      types: PERMIT_BATCH_TRANSFER_FROM_TYPES,
-      values: permit,
+      types,
+      values,
     }
   }
 
@@ -113,12 +155,12 @@ export abstract class SignatureTransfer {
     permit: PermitTransferFrom | PermitBatchTransferFrom,
     permit2Address: Address,
     chainId: number,
-    _witness?: Witness
+    witness?: Witness
   ): PermitTransferFromData | PermitBatchTransferFromData {
     if (isPermitTransferFrom(permit)) {
-      return this.getPermitTransferData(permit, permit2Address, chainId)
+      return this.getPermitTransferData(permit, permit2Address, chainId, witness)
     } else {
-      return this.getPermitBatchTransferData(permit, permit2Address, chainId)
+      return this.getPermitBatchTransferData(permit, permit2Address, chainId, witness)
     }
   }
 
@@ -126,25 +168,37 @@ export abstract class SignatureTransfer {
     permit: PermitTransferFrom | PermitBatchTransferFrom,
     permit2Address: Address,
     chainId: number,
-    _witness?: Witness
+    witness?: Witness
   ): string {
     if (isPermitTransferFrom(permit)) {
-      const { domain, types, values } = SignatureTransfer.getPermitTransferData(permit, permit2Address, chainId)
+      const { domain, types, values } = SignatureTransfer.getPermitTransferData(
+        permit,
+        permit2Address,
+        chainId,
+        witness
+      )
 
       return hashTypedData({
         domain,
         types,
-        primaryType: 'PermitTransferFrom',
-        message: values,
+        primaryType: witness ? 'PermitWitnessTransferFrom' : 'PermitTransferFrom',
+        message: {
+          ...values,
+        },
       })
     } else {
-      const { domain, types, values } = SignatureTransfer.getPermitBatchTransferData(permit, permit2Address, chainId)
+      const { domain, types, values } = SignatureTransfer.getPermitBatchTransferData(
+        permit,
+        permit2Address,
+        chainId,
+        witness
+      )
 
       return hashTypedData({
         domain,
         types,
-        primaryType: 'PermitBatchTransferFrom',
-        message: values,
+        primaryType: witness ? 'PermitBatchWitnessTransferFrom' : 'PermitBatchTransferFrom',
+        message: { ...values },
       })
     }
   }
